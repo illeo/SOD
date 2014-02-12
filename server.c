@@ -115,14 +115,17 @@ int main()
      {
      int x, num;
 	/*gestione del client*/
+	if ((num=read(NuovoSocket,buffer,sizeof(buffer)))<0)
+      {
+         printf("Impossibile leggere il messaggio.\n");
+         ChiudiSocket(NuovoSocket);
+      }
 	sem_wait(mutex);
-	/*leggi l'argomento del client e mettilo in num*/
-	/*leggi la shm e copia il contenuto in x*/
-	
-	*s = (char) (num = num + x);
+	num = atoi (*s);
+	*s = (char) (num + x);
 	sem_post(mutex);
-	/*chiudi connessione client*/
-     }//fine
+	close(client_socket);
+}//fine
      
 	sem_close(mutex);
 	printf("\n Serv: chiuso semaforo");
