@@ -23,7 +23,8 @@ int main()
 	key = 1000;
 	
 	//crea & inizializza il named semaphore
-	
+	if (pid > 0){
+
 	printf("\n Serv: creo named semaphore ");
 	mutex = sem_open(SEM_NAME,O_CREAT,0644,1);
 	if(mutex == SEM_FAILED)
@@ -88,7 +89,6 @@ int main()
     client_addr_len = sizeof(client_addr);
 
     /* forever padre*/
-    if (pid > 0){
     sem_wait(mutex);
     /*variabile di conteggio*/
     int n = 0;
