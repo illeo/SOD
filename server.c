@@ -18,12 +18,13 @@ int main()
 	key_t key;
 	char *shm,*s;
 	sem_t *mutex;
+	int n;
+
 	
 	//chiave statica
 	key = 1000;
 	
 	//crea & inizializza il named semaphore
-	if (pid > 0){
 
 	printf("\n Serv: creo named semaphore ");
 	mutex = sem_open(SEM_NAME,O_CREAT,0644,1);
@@ -91,11 +92,13 @@ int main()
     /* forever padre*/
     sem_wait(mutex);
     /*variabile di conteggio*/
-    int n = 0;
     s = shm;
 		sem_wait(mutex);
 		printf("\n Inizializzo la variabile\n");
+		n = 0;
 		*s = (char) n;
+		//devo scrivere in memoria condivisa anche la variabile mutex del semaforo, per far si che sia
+		//accessibile anche ai figli!!!
 		sem_post(mutex);
     }
     sem_post (mutex);
@@ -104,15 +107,8 @@ int main()
         	/* crea un figlio che gestisca la connessione */
         	if (struct sockaddr *) &client_addr, &client_addr_len));
         		pid = fork();
-        	/* verifica che tutto sia andato bene */
-        	if (client_socket < 0) 
-        	    error("ERROR on accept");
-     	}/* end while */
-     }
-     /*figlio*/
-
-     if (pid == 0)
-     {
+       if (pid == 0)
+     { /*figlio*/
      int x, num;
 	/*gestione del client*/
 	if ((num=read(NuovoSocket,buffer,sizeof(buffer)))<0)
@@ -120,12 +116,24 @@ int main()
          printf("Impossibile leggere il messaggio.\n");
          ChiudiSocket(NuovoSocket);
       }
+      //devo leggere dalla memoria condivisa il semaforo!!!
 	sem_wait(mutex);
 	num = atoi (*s);
 	*s = (char) (num + x);
 	sem_post(mutex);
 	close(client_socket);
+	//devo deallocare la memoria condivisa del figlio perchè non servirà più, sprecherebbe dello spazio
+	close(); //altrimenti il figlio rimarrebbe attivo e continuerà a generare processi figli, visto che rimarrà
+	//nel ciclo while!
 }//fine
+        	/* verifica che tutto sia andato bene */
+        	if (client_socket < 0) 
+        	    error("ERROR on accept");
+     	}/* end while */
+     }
+
+
+     
      
 	sem_close(mutex);
 	printf("\n Serv: chiuso semaforo");
